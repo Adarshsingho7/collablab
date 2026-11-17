@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  passwordHash     String
+  role             String            @default("STUDENT")
+  name             String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  createdLabs      Lab[]             @relation("LabCreator")
+  ownedSessions    CircuitSession[]  @relation("SessionOwner")
+  collaboratorRoles SessionCollaborator[]
+  gradedSubmissions Grade[]          @relation("GradeTeacher")
+  customComponents CustomComponent[] @relation("ComponentCreator")
+}
+
+model Lab {
+  id                 String           @id @default(uuid())
+  title              String
+  description        String
+  instructions       String?
+  expectedComponents String?
+  teacherId          String
+  teacher            User             @relation("LabCreator", fields: [teacherId], references: [id])
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  sessions           CircuitSession[]
+}
+
+model CircuitSession {
+  id             String               @id @default(uuid())
+  labId          String?
+  lab            Lab?                 @relation(fields: [labId], references: [id])
+  ownerId        String
+  owner          User                 @relation("SessionOwner", fields: [ownerId], references: [id])
+  circuitGraph   String                 @default("{}") // serialized components and wires
+  status         String               @default("IN_PROGRESS")
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  actionHistory  ActionHistoryEntry[]
+  simResults     SimulationResult[]
+  reports        Report[]
+  grade          Grade?
+  collaborators  SessionCollaborator[]
+}
+
+model SessionCollaborator {
+  id             String           @id @default(uuid())
+  sessionId      String
+  session        CircuitSession   @relation(fields: [sessionId], references: [id])
+  userId         String
+  user           User             @relation(fields: [userId], references: [id])
+  role           String           @default("VIEWER")
+  joinedAt       DateTime         @default(now())
+
+  @@unique([sessionId, userId])
+}
+
+model ActionHistoryEntry {
+  id            String         @id @default(uuid())
+  sessionId     String
+  session       CircuitSession @relation(fields: [sessionId], references: [id])
+  actionType    String
+  actionDetails String
+  timestamp     DateTime       @default(now())
+}
+
+model SimulationResult {
+  id            String         @id @default(uuid())
+  sessionId     String
+  session       CircuitSession @relation(fields: [sessionId], references: [id])
+  nodeVoltages  String
+  branchCurrents String
+  graphData     String?
+  timestamp     DateTime       @default(now())
+}
+
+model Report {
+  id            String         @id @default(uuid())
+  sessionId     String
+  session       CircuitSession @relation(fields: [sessionId], references: [id])
+  fileUrl       String?
+  content       String?
+  generatedAt   DateTime       @default(now())
+}
+
+model CustomComponent {
+  id            String   @id @default(uuid())
+  creatorId     String
+  creator       User     @relation("ComponentCreator", fields: [creatorId], references: [id])
+  name          String
+  symbol        String?
+  parameters    String
+  behavior      String
+  createdAt     DateTime @default(now())
+}
+
+model Grade {
+  id            String         @id @default(uuid())
+  sessionId     String         @unique
+  session       CircuitSession @relation(fields: [sessionId], references: [id])
+  teacherId     String
+  teacher       User           @relation("GradeTeacher", fields: [teacherId], references: [id])
+  score         Float
+  feedback      String?
+  gradedAt      DateTime       @default(now())
+}

@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.db-journal
+dev.db
+backend/dev.db
+backend/prisma/dev.db
+
+# Reports storage (local cache)
+reports/
+backend/reports/
+
+# Agent & AI scratch folders and files
+brain/
+**/.agents/
+**/.claude/
+**/.cursor/
+**/.devin/
+**/.agents
+**/.claude
+**/.cursor
+**/.devin
+prompt.json
+initial_prompt.json
+found_definition*.txt
+spec.txt
+
+# Scratch logs & debug screenshots
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+screenshots/
+dashboard.png
+freelab.png
+login.png
+task-lab.png
+
+# Editor / OS files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Synopsis / proposals
+*.docx
+synopsis.txt
+
